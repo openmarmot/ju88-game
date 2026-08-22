@@ -1,0 +1,7 @@
+JU-88 Game Change Log
+
+---------------------------------
+August 22 2026
+- initial game
+- version number (v0.1.0) on the briefing screen
+- v0.2.0 walk the pilot (WASD) and Enter to board the Ju 88. Plane controls after that. Soldier art from TWE.

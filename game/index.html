@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="data:," />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ju 88 — Feldflugplatz Holm</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div id="hud" class="hidden">
+    <div class="panel left">
+      <div class="panel-title">Jumo 211</div>
+      <div class="engines">
+        <div class="engine" id="eng-0">
+          <div class="eng-head">
+            <span class="eng-name">Port</span>
+            <button type="button" class="eng-btn" data-eng="0">Start</button>
+          </div>
+          <div class="readout"><span>RPM</span><b id="rpm-0">—</b></div>
+          <div class="readout"><span>Temp</span><b id="temp-0">8°C</b></div>
+          <div class="bar"><div class="fill temp" id="tempbar-0"></div></div>
+          <div class="eng-state" id="state-0">OFF</div>
+        </div>
+        <div class="engine" id="eng-1">
+          <div class="eng-head">
+            <span class="eng-name">Stbd</span>
+            <button type="button" class="eng-btn" data-eng="1">Start</button>
+          </div>
+          <div class="readout"><span>RPM</span><b id="rpm-1">—</b></div>
+          <div class="readout"><span>Temp</span><b id="temp-1">8°C</b></div>
+          <div class="bar"><div class="fill temp" id="tempbar-1"></div></div>
+          <div class="eng-state" id="state-1">OFF</div>
+        </div>
+      </div>
+      <p class="hint">1 / 2 start · hold full throttle on the ground and they cook</p>
+    </div>
+
+    <div class="panel top">
+      <div class="tape">
+        <div class="inst"><span>IAS</span><b id="ias">0</b><i>km/h</i></div>
+        <div class="inst"><span>ALT</span><b id="alt">0</b><i>m</i></div>
+        <div class="inst"><span>ROC</span><b id="roc">0</b><i>m/s</i></div>
+        <div class="inst"><span>HDG</span><b id="hdg">090</b><i>°</i></div>
+        <div class="inst"><span>THR</span><b id="thr">0</b><i>%</i></div>
+        <div class="inst"><span>FLAPS</span><b id="flaps">UP</b></div>
+      </div>
+    </div>
+
+    <div class="panel right">
+      <div class="panel-title">Fuel · B4 87 octane</div>
+      <div class="tanks" id="tanks"></div>
+      <div class="readout total"><span>Total</span><b id="fuel-total">0 L</b></div>
+      <div class="bombs-row">
+        <span>SC 250</span>
+        <div id="bomb-dots"></div>
+      </div>
+    </div>
+
+    <div class="panel bottom">
+      <div class="mission-line">
+        <span class="phase" id="phase">PREFLIGHT</span>
+        <span id="mission-text">Start both engines. Taxi east on the concrete. Rotate at ~140 km/h.</span>
+      </div>
+      <div class="steps" id="steps"></div>
+    </div>
+
+    <canvas id="minimap" width="220" height="140"></canvas>
+    <div class="warn" id="warn"></div>
+    <button type="button" id="pause-btn">Pause</button>
+  </div>
+
+  <div id="briefing">
+    <div class="brief-card">
+      <p class="kicker">
+        <span>Flight Sim</span>
+        <span class="ver" id="version"></span>
+      </p>
+      <h1>Junkers Ju 88</h1>
+      <p class="sub">Feldflugplatz Holm · late summer 1944</p>
+      <p class="body">
+        Twin Jumo 211s, four tanks, four SC 250s. Walk to the aeroplane, climb in,
+        take off from the strip, bomb the supply depot to the east, and bring it
+        back onto the concrete. Each engine is started on its own. Watch oil
+        temperature — a Jumo sitting at full throttle on the ground will seize.
+      </p>
+      <ul class="keys">
+        <li><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> walk · <kbd>Enter</kbd> board the Ju 88</li>
+        <li><kbd>1</kbd> <kbd>2</kbd> start / stop engines</li>
+        <li><kbd>Q</kbd> <kbd>E</kbd> or <kbd>←</kbd> <kbd>→</kbd> throttle</li>
+        <li><kbd>W</kbd> stick forward, nose down · <kbd>S</kbd> stick back, nose up · <kbd>W</kbd> brake on ground</li>
+        <li>Stall long enough and it spins. Nose down to recover. A hard landing burns.</li>
+        <li><kbd>A</kbd> <kbd>D</kbd> turn</li>
+        <li><kbd>F</kbd> flaps · <kbd>Space</kbd> bombs</li>
+      </ul>
+      <div class="brief-actions">
+        <button type="button" id="start-btn">Click or press Enter to start</button>
+        <button type="button" id="manual-btn">Flight manual</button>
+      </div>
+      <p class="credit">Plane, hangars, depot, bomb and soldier art from TWE (openmarmot/twe).</p>
+    </div>
+  </div>
+
+  <div id="help" class="hidden">
+    <div class="help-card">
+      <p class="kicker" id="help-kicker">Flight manual</p>
+      <h2>Junkers Ju 88</h2>
+      <p class="lead">
+        Top-down, same idea as TWE’s airplane: throttle stays where you leave it,
+        the camera looks straight down, the world does not rotate.
+      </p>
+
+      <h3>On foot</h3>
+      <table>
+        <tr><td>W A S D</td><td>Walk. The world does not rotate — W is up the screen.</td></tr>
+        <tr><td>Enter</td><td>Climb into the Ju 88 when you are next to the port-side hatch.</td></tr>
+      </table>
+
+      <h3>In the cockpit</h3>
+      <table>
+        <tr><td>1 / 2</td><td>Start or cut port / starboard Jumo 211. Same as the panel buttons.</td></tr>
+        <tr><td>Q ← −</td><td>Throttle down</td></tr>
+        <tr><td>E → =</td><td>Throttle up. The lever stays put; it is not a speed key.</td></tr>
+        <tr><td>W</td><td>Stick forward, nose down. Wheel brake on the ground.</td></tr>
+        <tr><td>S</td><td>Stick back, nose up. Rotate on takeoff, flare on landing.</td></tr>
+        <tr><td>A D</td><td>Wheel steering on the ground, aileron turn in the air</td></tr>
+        <tr><td>F</td><td>Flaps UP → takeoff → landing → UP</td></tr>
+        <tr><td>Space</td><td>Release one SC 250. The pipper is estimated impact.</td></tr>
+        <tr><td>[ ] / wheel</td><td>Zoom</td></tr>
+        <tr><td>H / P</td><td>Pause and open this manual</td></tr>
+        <tr><td>Esc</td><td>Close the manual</td></tr>
+        <tr><td>R</td><td>Restart the mission</td></tr>
+      </table>
+
+      <h3>Aerodynamics</h3>
+      <div class="aero">
+        <p><b>Stick.</b> W pushes the nose down. S pulls it up. This is a stick, not “W to climb”.</p>
+        <p><b>Throttle.</b> Q and E move a lever that stays where you leave it. More power climbs and goes faster in level flight; it does not set a speed by itself.</p>
+        <p><b>Flaps.</b> Takeoff flaps lower the speed you need to rotate. Landing flaps add drag and cap speed — a descent with the boards out bleeds IAS instead of building it. Clean (UP), a nose-down run picks up speed and can pass level-flight cruise.</p>
+        <p><b>Energy.</b> Climbing costs knots. Pushing over with flaps up turns height into IAS. Level out and the extra speed bleeds off. Idle with the nose down and flaps up, you accelerate; same dive with landing flaps, you slow down.</p>
+        <p><b>Stall and spin.</b> Clean stall is about 125 km/h. Flaps buy a slower stall. Hold the nose up as speed falls: it mushes, then it spins. Recover by pushing the nose down (W) until it flies. Spinning in, or arriving too hard, starts a fire.</p>
+        <p><b>Engines.</b> Each Jumo starts on its own. They drink from the tanks on their side first. Full throttle with the wheels on the concrete will cook the oil and seize. Airspeed cools them. One engine out yaws the aeroplane.</p>
+        <p><b>Takeoff.</b> Flaps TO, throttle up, S to rotate around 140 km/h.</p>
+        <p><b>Landing.</b> Flaps LDG, bleed speed, put it on the grey strip. Flare with S so the rate of descent dies before the concrete. W is the wheel brake once you are down. Stop on the strip to complete.</p>
+        <p><b>Bombs.</b> Four SC 250s. Space releases one. Empty racks, or three buildings wrecked, and you are on the way home.</p>
+      </div>
+
+      <button type="button" id="resume-btn">Resume — Esc</button>
+      <p class="close-hint">H, P or Esc also closes. Click the dimmed area to dismiss.</p>
+    </div>
+  </div>
+
+  <div id="end" class="hidden">
+    <div class="brief-card">
+      <h1 id="end-title">Mission</h1>
+      <p class="body" id="end-body"></p>
+      <button type="button" id="again-btn">Fly it again — R</button>
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
