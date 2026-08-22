@@ -146,7 +146,7 @@
       y: PILOT_SPAWN.y,
       hdg: PILOT_SPAWN.hdg,
       walking: false,
-      draw: 36,
+      draw: 12,
     };
     mission = {
       phase: "PREFLIGHT",
@@ -1379,14 +1379,14 @@
 
   function drawPilot() {
     if (boarded || !pilot) return;
-    const bob = pilot.walking ? Math.sin(time * 16) * 1.1 : 0;
+    const bob = pilot.walking ? Math.sin(time * 16) * 0.35 : 0;
     drawSprite("pilot", pilot.x, pilot.y + bob, pilot.draw, pilot.draw, pilot.hdg, 1);
     if (canBoard()) {
       ctx.save();
       ctx.fillStyle = "rgba(230, 220, 180, 0.95)";
       ctx.font = "11px ui-monospace, monospace";
       ctx.textAlign = "center";
-      ctx.fillText("ENTER to board", pilot.x, pilot.y - 24);
+      ctx.fillText("ENTER to board", pilot.x, pilot.y - 10);
       ctx.restore();
     }
   }
